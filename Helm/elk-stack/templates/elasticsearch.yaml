@@ -1,0 +1,177 @@
+{{- if .Values.elasticsearch.enabled -}}
+# ---------------------------------------------------------------------------
+# Elasticsearch — headless Service (required by StatefulSet stable DNS)
+# ---------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "elk-stack.elasticsearch.fullname" . }}-headless
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "elk-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: elasticsearch
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: http
+      port: {{ .Values.elasticsearch.service.httpPort }}
+      targetPort: http
+    - name: transport
+      port: {{ .Values.elasticsearch.service.transportPort }}
+      targetPort: transport
+  selector:
+    {{- include "elk-stack.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: elasticsearch
+---
+# ---------------------------------------------------------------------------
+# Elasticsearch — ClusterIP Service (for Kibana / Logstash access)
+# ---------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "elk-stack.elasticsearch.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "elk-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: elasticsearch
+spec:
+  type: {{ .Values.elasticsearch.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.elasticsearch.service.httpPort }}
+      targetPort: http
+    - name: transport
+      port: {{ .Values.elasticsearch.service.transportPort }}
+      targetPort: transport
+  selector:
+    {{- include "elk-stack.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: elasticsearch
+---
+# ---------------------------------------------------------------------------
+# Elasticsearch — StatefulSet
+# ---------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "elk-stack.elasticsearch.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "elk-stack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: elasticsearch
+spec:
+  serviceName: {{ include "elk-stack.elasticsearch.fullname" . }}-headless
+  replicas: {{ .Values.elasticsearch.replicas }}
+  selector:
+    matchLabels:
+      {{- include "elk-stack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: elasticsearch
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        {{- include "elk-stack.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: elasticsearch
+    spec:
+      serviceAccountName: {{ include "elk-stack.serviceAccountName" . }}
+      nodeSelector:
+        cloud.google.com/gke-nodepool: searchnodes
+      tolerations:
+        - key: "apptype"
+          value: "search"
+          effect: "NoSchedule"
+          operator: "Equal"
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+      {{- if eq .Values.elasticsearch.antiAffinity "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  {{- include "elk-stack.selectorLabels" . | nindent 18 }}
+                  app.kubernetes.io/component: elasticsearch
+              topologyKey: kubernetes.io/hostname
+      {{- else if eq .Values.elasticsearch.antiAffinity "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "elk-stack.selectorLabels" . | nindent 20 }}
+                    app.kubernetes.io/component: elasticsearch
+                topologyKey: kubernetes.io/hostname
+      {{- end }}
+      containers:
+        - name: elasticsearch
+          image: "{{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.elasticsearch.service.httpPort }}
+              protocol: TCP
+            - name: transport
+              containerPort: {{ .Values.elasticsearch.service.transportPort }}
+              protocol: TCP
+          env:
+            - name: node.name
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: cluster.name
+              value: {{ include "elk-stack.fullname" . }}-cluster
+            - name: discovery.seed_hosts
+              value: {{ include "elk-stack.elasticsearch.fullname" . }}-headless
+            - name: cluster.initial_master_nodes
+              value: {{ range $i, $v := until (.Values.elasticsearch.replicas | int) }}{{ if gt $i 0 }},{{ end }}{{ include "elk-stack.elasticsearch.fullname" $ }}-{{ $i }}{{ end }}
+            - name: ES_JAVA_OPTS
+              value: {{ .Values.elasticsearch.javaOpts | quote }}
+            - name: xpack.security.enabled
+              value: {{ .Values.elasticsearch.xpackSecurityEnabled | quote }}
+            - name: network.host
+              value: "0.0.0.0"
+            {{- with .Values.elasticsearch.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.elasticsearch.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /_cluster/health?local=true
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /_cluster/health?local=true
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            failureThreshold: 5
+          volumeMounts:
+            - name: data
+              mountPath: /usr/share/elasticsearch/data
+  {{- if .Values.elasticsearch.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: {{ .Values.global.storageClass | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.elasticsearch.persistence.size | quote }}
+  {{- else }}
+      volumes:
+        - name: data
+          emptyDir: {}
+  {{- end }}
+{{- end }}

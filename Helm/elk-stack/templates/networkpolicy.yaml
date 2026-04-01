@@ -1,0 +1,65 @@
+{{- if .Values.networkPolicy.enabled -}}
+# ---------------------------------------------------------------------------
+# NetworkPolicy — restrict ingress to only ELK inter-component traffic
+# ---------------------------------------------------------------------------
+
+# Allow Kibana → Elasticsearch
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "elk-stack.fullname" . }}-elasticsearch
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "elk-stack.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "elk-stack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: elasticsearch
+  policyTypes:
+    - Ingress
+  ingress:
+    # Intra-cluster transport (ES ↔ ES)
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "elk-stack.selectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: elasticsearch
+      ports:
+        - port: {{ .Values.elasticsearch.service.transportPort }}
+    # HTTP from Kibana
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "elk-stack.selectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: kibana
+      ports:
+        - port: {{ .Values.elasticsearch.service.httpPort }}
+    # HTTP from Logstash
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "elk-stack.selectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: logstash
+      ports:
+        - port: {{ .Values.elasticsearch.service.httpPort }}
+---
+# Allow Beats → Logstash
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "elk-stack.fullname" . }}-logstash
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "elk-stack.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "elk-stack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: logstash
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - port: {{ .Values.logstash.service.beatsPort }}
+{{- end }}

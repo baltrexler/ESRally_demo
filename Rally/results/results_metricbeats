@@ -1,0 +1,143 @@
+[INFO] Racing on track [metricbeat], challenge [append-no-conflicts] and car ['external'] with version [8.12.0].
+
+[WARNING] merges_total_time is 151775 ms indicating that the cluster is not in a defined clean state. Recorded index time metrics may be misleading.
+[WARNING] merges_total_throttled_time is 29123 ms indicating that the cluster is not in a defined clean state. Recorded index time metrics may be misleading.
+[WARNING] indexing_total_time is 1010165 ms indicating that the cluster is not in a defined clean state. Recorded index time metrics may be misleading.
+[WARNING] refresh_total_time is 84802 ms indicating that the cluster is not in a defined clean state. Recorded index time metrics may be misleading.
+[WARNING] flush_total_time is 85749 ms indicating that the cluster is not in a defined clean state. Recorded index time metrics may be misleading.
+Running delete-index                                                           [100% done]
+Running create-index                                                           [100% done]
+Running check-cluster-health                                                   [100% done]
+Running index-append                                                           [100% done]
+Running refresh-after-index                                                    [100% done]
+Running force-merge                                                            [100% done]
+Running refresh-after-force-merge                                              [100% done]
+Running wait-until-merges-finish                                               [100% done]
+Running auto-date-histogram                                                    [100% done]
+Running auto-date-histogram-with-tz                                            [100% done]
+Running date-histogram                                                         [100% done]
+Running date-histogram-with-tz                                                 [100% done]
+
+------------------------------------------------------
+    _______             __   _____
+   / ____(_)___  ____ _/ /  / ___/_________  ________
+  / /_  / / __ \/ __ `/ /   \__ \/ ___/ __ \/ ___/ _ \
+ / __/ / / / / / /_/ / /   ___/ / /__/ /_/ / /  /  __/
+/_/   /_/_/ /_/\__,_/_/   /____/\___/\____/_/   \___/
+------------------------------------------------------
+
+|                                                         Metric |                        Task |           Value |   Unit |
+|---------------------------------------------------------------:|----------------------------:|----------------:|-------:|
+|                     Cumulative indexing time of primary shards |                             |     4.6423      |    min |
+|             Min cumulative indexing time across primary shards |                             |     0.00218333  |    min |
+|          Median cumulative indexing time across primary shards |                             |     0.0105333   |    min |
+|             Max cumulative indexing time across primary shards |                             |     4.62958     |    min |
+|            Cumulative indexing throttle time of primary shards |                             |     0           |    min |
+|    Min cumulative indexing throttle time across primary shards |                             |     0           |    min |
+| Median cumulative indexing throttle time across primary shards |                             |     0           |    min |
+|    Max cumulative indexing throttle time across primary shards |                             |     0           |    min |
+|                        Cumulative merge time of primary shards |                             |     0.821833    |    min |
+|                       Cumulative merge count of primary shards |                             |    13           |        |
+|                Min cumulative merge time across primary shards |                             |     0.00245     |    min |
+|             Median cumulative merge time across primary shards |                             |     0.00746667  |    min |
+|                Max cumulative merge time across primary shards |                             |     0.811917    |    min |
+|               Cumulative merge throttle time of primary shards |                             |     0.31775     |    min |
+|       Min cumulative merge throttle time across primary shards |                             |     0           |    min |
+|    Median cumulative merge throttle time across primary shards |                             |     0           |    min |
+|       Max cumulative merge throttle time across primary shards |                             |     0.31775     |    min |
+|                      Cumulative refresh time of primary shards |                             |     0.187333    |    min |
+|                     Cumulative refresh count of primary shards |                             |   123           |        |
+|              Min cumulative refresh time across primary shards |                             |     0.00675     |    min |
+|           Median cumulative refresh time across primary shards |                             |     0.0193      |    min |
+|              Max cumulative refresh time across primary shards |                             |     0.161283    |    min |
+|                        Cumulative flush time of primary shards |                             |     0.20045     |    min |
+|                       Cumulative flush count of primary shards |                             |    14           |        |
+|                Min cumulative flush time across primary shards |                             |     0.00555     |    min |
+|             Median cumulative flush time across primary shards |                             |     0.0096      |    min |
+|                Max cumulative flush time across primary shards |                             |     0.1853      |    min |
+|                                        Total Young Gen GC time |                             |     0.97        |      s |
+|                                       Total Young Gen GC count |                             |     6           |        |
+|                                          Total Old Gen GC time |                             |     0           |      s |
+|                                         Total Old Gen GC count |                             |     0           |        |
+|                                                     Store size |                             |     0.585614    |     GB |
+|                                                  Translog size |                             |     0.000700713 |     GB |
+|                                         Heap used for segments |                             |     0           |     MB |
+|                                       Heap used for doc values |                             |     0           |     MB |
+|                                            Heap used for terms |                             |     0           |     MB |
+|                                            Heap used for norms |                             |     0           |     MB |
+|                                           Heap used for points |                             |     0           |     MB |
+|                                    Heap used for stored fields |                             |     0           |     MB |
+|                                                  Segment count |                             |    34           |        |
+|                                    Total Ingest Pipeline count |                             |     0           |        |
+|                                     Total Ingest Pipeline time |                             |     0           |      s |
+|                                   Total Ingest Pipeline failed |                             |     0           |        |
+|                                                 Min Throughput |                index-append |  1065.62        | docs/s |
+|                                                Mean Throughput |                index-append | 13991           | docs/s |
+|                                              Median Throughput |                index-append | 14739.2         | docs/s |
+|                                                 Max Throughput |                index-append | 19972.4         | docs/s |
+|                                        50th percentile latency |                index-append |  2513.56        |     ms |
+|                                        90th percentile latency |                index-append |  5636.99        |     ms |
+|                                        99th percentile latency |                index-append |  9341.39        |     ms |
+|                                       100th percentile latency |                index-append |  9522.76        |     ms |
+|                                   50th percentile service time |                index-append |  2513.56        |     ms |
+|                                   90th percentile service time |                index-append |  5636.99        |     ms |
+|                                   99th percentile service time |                index-append |  9341.39        |     ms |
+|                                  100th percentile service time |                index-append |  9522.76        |     ms |
+|                                                     error rate |                index-append |     0           |      % |
+|                                                 Min Throughput |         auto-date-histogram |     2.01        |  ops/s |
+|                                                Mean Throughput |         auto-date-histogram |     2.02        |  ops/s |
+|                                              Median Throughput |         auto-date-histogram |     2.02        |  ops/s |
+|                                                 Max Throughput |         auto-date-histogram |     2.04        |  ops/s |
+|                                        50th percentile latency |         auto-date-histogram |    10.3969      |     ms |
+|                                        90th percentile latency |         auto-date-histogram |    10.9931      |     ms |
+|                                        99th percentile latency |         auto-date-histogram |    11.606       |     ms |
+|                                       100th percentile latency |         auto-date-histogram |    11.733       |     ms |
+|                                   50th percentile service time |         auto-date-histogram |     7.96952     |     ms |
+|                                   90th percentile service time |         auto-date-histogram |     8.64497     |     ms |
+|                                   99th percentile service time |         auto-date-histogram |     9.36125     |     ms |
+|                                  100th percentile service time |         auto-date-histogram |     9.80531     |     ms |
+|                                                     error rate |         auto-date-histogram |     0           |      % |
+|                                                 Min Throughput | auto-date-histogram-with-tz |     2.01        |  ops/s |
+|                                                Mean Throughput | auto-date-histogram-with-tz |     2.02        |  ops/s |
+|                                              Median Throughput | auto-date-histogram-with-tz |     2.02        |  ops/s |
+|                                                 Max Throughput | auto-date-histogram-with-tz |     2.04        |  ops/s |
+|                                        50th percentile latency | auto-date-histogram-with-tz |    10.2171      |     ms |
+|                                        90th percentile latency | auto-date-histogram-with-tz |    11.4836      |     ms |
+|                                        99th percentile latency | auto-date-histogram-with-tz |    13.1827      |     ms |
+|                                       100th percentile latency | auto-date-histogram-with-tz |    63.2224      |     ms |
+|                                   50th percentile service time | auto-date-histogram-with-tz |     8.00741     |     ms |
+|                                   90th percentile service time | auto-date-histogram-with-tz |     8.82969     |     ms |
+|                                   99th percentile service time | auto-date-histogram-with-tz |    10.5209      |     ms |
+|                                  100th percentile service time | auto-date-histogram-with-tz |    10.5638      |     ms |
+|                                                     error rate | auto-date-histogram-with-tz |     0           |      % |
+|                                                 Min Throughput |              date-histogram |     2.01        |  ops/s |
+|                                                Mean Throughput |              date-histogram |     2.02        |  ops/s |
+|                                              Median Throughput |              date-histogram |     2.02        |  ops/s |
+|                                                 Max Throughput |              date-histogram |     2.04        |  ops/s |
+|                                        50th percentile latency |              date-histogram |    11.812       |     ms |
+|                                        90th percentile latency |              date-histogram |    16.2316      |     ms |
+|                                        99th percentile latency |              date-histogram |    21.3744      |     ms |
+|                                       100th percentile latency |              date-histogram |    22.1682      |     ms |
+|                                   50th percentile service time |              date-histogram |     9.40876     |     ms |
+|                                   90th percentile service time |              date-histogram |    13.9208      |     ms |
+|                                   99th percentile service time |              date-histogram |    18.8953      |     ms |
+|                                  100th percentile service time |              date-histogram |    18.9137      |     ms |
+|                                                     error rate |              date-histogram |     0           |      % |
+|                                                 Min Throughput |      date-histogram-with-tz |     2.01        |  ops/s |
+|                                                Mean Throughput |      date-histogram-with-tz |     2.02        |  ops/s |
+|                                              Median Throughput |      date-histogram-with-tz |     2.02        |  ops/s |
+|                                                 Max Throughput |      date-histogram-with-tz |     2.04        |  ops/s |
+|                                        50th percentile latency |      date-histogram-with-tz |    16.7671      |     ms |
+|                                        90th percentile latency |      date-histogram-with-tz |    17.9198      |     ms |
+|                                        99th percentile latency |      date-histogram-with-tz |    20.2684      |     ms |
+|                                       100th percentile latency |      date-histogram-with-tz |    21.9439      |     ms |
+|                                   50th percentile service time |      date-histogram-with-tz |    14.2226      |     ms |
+|                                   90th percentile service time |      date-histogram-with-tz |    15.6353      |     ms |
+|                                   99th percentile service time |      date-histogram-with-tz |    18.0852      |     ms |
+|                                  100th percentile service time |      date-histogram-with-tz |    19.6966      |     ms |
+|                                                     error rate |      date-histogram-with-tz |     0           |      % |
+
+
+---------------------------------
+[INFO] SUCCESS (took 474 seconds)
+---------------------------------

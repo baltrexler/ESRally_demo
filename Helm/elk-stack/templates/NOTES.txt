@@ -1,0 +1,53 @@
+╔══════════════════════════════════════════════════════════════════╗
+║              ELK Stack deployed successfully! 🎉                ║
+╚══════════════════════════════════════════════════════════════════╝
+
+Release:   {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Version:   {{ .Chart.AppVersion }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Cluster Health
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Wait for all pods to be ready:
+
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }} -w
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Elasticsearch
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Internal endpoint:
+  http://{{ include "elk-stack.elasticsearch.fullname" . }}:{{ .Values.elasticsearch.service.httpPort }}
+
+Quick cluster-health check (from inside the cluster):
+  curl http://{{ include "elk-stack.elasticsearch.fullname" . }}:{{ .Values.elasticsearch.service.httpPort }}/_cluster/health?pretty
+
+Port-forward for local access:
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "elk-stack.elasticsearch.fullname" . }} 9200:9200
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Kibana
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{{- if .Values.kibana.ingress.enabled }}
+Kibana is exposed via Ingress at:
+  http{{ if .Values.kibana.ingress.tls }}s{{ end }}://{{ .Values.kibana.ingress.host }}
+{{- else }}
+Port-forward for local access:
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "elk-stack.kibana.fullname" . }} 5601:5601
+
+Then open: http://localhost:5601
+{{- end }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Logstash (Beats input)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Internal Beats endpoint:
+  {{ include "elk-stack.logstash.fullname" . }}:{{ .Values.logstash.service.beatsPort }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Tips
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• X-Pack security is {{ if .Values.elasticsearch.xpackSecurityEnabled }}ENABLED{{ else }}DISABLED (dev mode — enable for production){{ end }}.
+• To enable Kibana Ingress, set kibana.ingress.enabled=true and kibana.ingress.host=<your-domain>.
+• To enable NetworkPolicies, set networkPolicy.enabled=true.
+• Persistent volumes use StorageClass: {{ .Values.global.storageClass }}

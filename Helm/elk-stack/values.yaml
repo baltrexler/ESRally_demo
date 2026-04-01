@@ -1,0 +1,161 @@
+# =============================================================================
+# ELK Stack Helm Chart - values.yaml
+# Tested against GKE with standard StorageClass "standard-rwo"
+# =============================================================================
+
+global:
+  # Namespace is set via `helm install -n <namespace>`
+  storageClass: "standard-rwo"   # GKE default SSD-backed RWO storage class
+  imagePullPolicy: IfNotPresent
+
+# -----------------------------------------------------------------------------
+# Elasticsearch
+# -----------------------------------------------------------------------------
+elasticsearch:
+  enabled: true
+
+  image:
+    repository: docker.elastic.co/elasticsearch/elasticsearch
+    tag: "8.12.0"
+
+  replicas: 3
+
+  # Resource requests/limits — tune for your node pool
+  resources:
+    requests:
+      cpu: "4000m"
+      memory: "29Gi"
+    limits:
+      cpu: "8000m"
+      memory: "60Gi"
+
+  # JVM heap — keep at ~50 % of container memory limit
+  javaOpts: "-Xms31g -Xmx31g"
+
+  persistence:
+    enabled: true
+    size: 30Gi
+
+  # Service
+  service:
+    type: ClusterIP
+    httpPort: 9200
+    transportPort: 9300
+
+  # Anti-affinity keeps pods on separate GKE nodes
+  antiAffinity: soft   # "hard" | "soft"
+
+  # Extra environment variables injected into the Elasticsearch container
+  extraEnv: []
+  # - name: SOME_VAR
+  #   value: "some-value"
+
+  # Security: disable X-Pack security for a basic/dev setup.
+  # Set to true and configure certificates for production.
+  xpackSecurityEnabled: false
+
+# -----------------------------------------------------------------------------
+# Logstash
+# -----------------------------------------------------------------------------
+logstash:
+  enabled: true
+
+  image:
+    repository: docker.elastic.co/logstash/logstash
+    tag: "8.12.0"
+
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: "300m"
+      memory: "1Gi"
+    limits:
+      cpu: "500m"
+      memory: "2Gi"
+
+  javaOpts: "-Xms512m -Xmx512m"
+
+  service:
+    type: ClusterIP
+    beatsPort: 5044   # Filebeat / Beats input
+    httpPort: 9600    # Logstash monitoring API
+
+  # Logstash pipeline config — override to customise inputs/filters/outputs
+  pipeline:
+    input: |
+      beats {
+        port => 5044
+      }
+    filter: |
+      # Add grok, mutate, etc. here
+    output: |
+      elasticsearch {
+        hosts => ["http://{{ include "elk-stack.elasticsearch.fullname" . }}:9200"]
+        index => "logstash-%{+YYYY.MM.dd}"
+      }
+
+  extraEnv: []
+
+# -----------------------------------------------------------------------------
+# Kibana
+# -----------------------------------------------------------------------------
+kibana:
+  enabled: true
+
+  image:
+    repository: docker.elastic.co/kibana/kibana
+    tag: "8.12.0"
+
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+
+  service:
+    type: ClusterIP
+    port: 5601
+
+  # Expose Kibana via a GKE Ingress (requires GKE Ingress Controller)
+  ingress:
+    enabled: false
+    className: ""          # e.g. "gce" for GKE's built-in ingress
+    annotations: {}
+    # kubernetes.io/ingress.class: gce
+    # kubernetes.io/ingress.global-static-ip-name: my-static-ip
+    host: kibana.example.com
+    tls: []
+    # - secretName: kibana-tls
+    #   hosts:
+    #     - kibana.example.com
+
+  extraEnv: []
+
+# -----------------------------------------------------------------------------
+# Service Account
+# -----------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  annotations: {}
+  # Workload Identity example:
+  # iam.gke.io/gcp-service-account: gsa-name@project-id.iam.gserviceaccount.com
+  name: ""
+
+# -----------------------------------------------------------------------------
+# Pod Security Context (applied to all ELK pods)
+# -----------------------------------------------------------------------------
+podSecurityContext:
+  fsGroup: 1000
+  runAsUser: 1000
+  runAsNonRoot: true
+
+# -----------------------------------------------------------------------------
+# Network Policy
+# -----------------------------------------------------------------------------
+networkPolicy:
+  enabled: false   # Enable to restrict inter-pod traffic to ELK ports only

@@ -1,0 +1,14 @@
+apiVersion: v2
+name: elk-stack
+description: A Helm chart deploying an ELK Stack (Elasticsearch, Logstash, Kibana) on GKE
+type: application
+version: 1.0.0
+appVersion: "8.12.0"
+keywords:
+  - elasticsearch
+  - logstash
+  - kibana
+  - elk
+  - logging
+maintainers:
+  - name: platform-team
