@@ -1,45 +1,83 @@
-## Create project in GCP called "elk-testbed" This can be done in TF if you wish however I did it manually.
+# ELK Testbed on GKE
 
-### Terraform ###
+A self-contained ELK stack (Elasticsearch, Logstash, Kibana) deployed on Google Kubernetes Engine, with ESRally benchmarking support.
 
-terraform apply -var="service_account_id=<input service_account ex 111111111111-compute@developer.gserviceaccount.com>"
+---
 
-### Attach Kubectl ###
+## Prerequisites
 
+- GCP project named `elk-testbed` (created manually or via Terraform)
+- `gcloud`, `kubectl`, and `helm` installed and authenticated
+
+---
+
+## Deployment
+
+### 1. Provision Infrastructure
+
+```bash
+terraform apply -var="service_account_id=<sa>@<project>.iam.gserviceaccount.com"
+```
+
+> Alternatively, export `TF_VAR_service_account_id` in your environment to avoid passing it on the command line.
+
+### 2. Configure kubectl
+
+```bash
 gcloud container clusters get-credentials elastic-testbed --region us-east4 --project elk-testbed
+```
 
-### HELM deploy ###
+### 3. Deploy ELK Stack via Helm
 
+```bash
 kubectl create namespace elk
-helm install elk-stack ./elk-stack -n elk --wait
+helm install elk-stack ./Helm/elk-stack -n elk --wait
+```
+
+### 4. Access Kibana
+
+```bash
 kubectl port-forward -n elk svc/elk-stack-kibana 5601:5601
+```
 
+Kibana will be available at `http://localhost:5601`.
 
-### ESRALLY ###
+---
 
+## Benchmarking with ESRally
+
+### Deploy the ESRally Pod
+
+```bash
 kubectl apply -f rally.yaml
-kubectl exec -it esrally -- bash
+```
 
-# then inside the pod:
+### Run a Benchmark
+
+```bash
+kubectl exec -it esrally -- bash
+```
+
+Then inside the pod:
+
+```bash
 esrally race \
   --track=geonames \
   --challenge=append-no-conflicts \
   --pipeline=benchmark-only \
-  --target-hosts=34.118.228.93:9200
+  --target-hosts=<elasticsearch-service-ip>:9200
+```
 
+---
 
+## Known Issues
 
-
-
-
-  ######
-  ISSUES FOUND DURING DEPLOYMENT
-  ######
-
-- Simple deployment in kubernetes with only 3 nodes led to multi-tenancy. The nodes were also too small to do a proper load test on.
-- I had been doing some hands on dashboard building on the cluster and had some data loaded already, which led to warnings that metrics may be misleading.
-- Test took entirely too long on my local machine with the port forwarded cluster ended up having to deploy a long standing ESrally to the cluster.
-- When creating two nodepools I tainted the generic nodepool and had no system nodes available to do basic K8s funcitons.
-- ES will not run unless min&max JVM heap sizes are the same.
-- Quota Management in GCP. Ran out of Disk space had to adjust.
-- Ran a track that the decompressed data was larger than the persistent storage of the pod... killing the pod.
+| Issue | Notes |
+|---|---|
+| Multi-tenancy on small nodes | A 3-node cluster with undersized nodes caused resource contention and was insufficient for meaningful load testing. |
+| Pre-existing data on cluster | Data loaded from prior dashboard work caused warnings that benchmark metrics may be misleading. |
+| Local port-forward performance | Running ESRally locally against a port-forwarded cluster was too slow; a long-running ESRally pod deployed to the cluster was required instead. |
+| Tainted nodepool blocking system pods | When tainting the generic nodepool, no untainted nodes remained for core Kubernetes functions. Ensure a system nodepool is always left untainted. |
+| Elasticsearch JVM heap | ES requires `Xms` and `Xmx` to be equal. Mismatched values will prevent startup. |
+| GCP disk quota | Ran out of persistent disk quota mid-deployment. Check and raise GCP quotas before provisioning. |
+| Track data exceeds PVC size | Running a track whose decompressed dataset exceeded the pod's persistent storage killed the pod. Size PVCs accordingly before selecting a track. |
