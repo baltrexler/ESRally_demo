@@ -81,3 +81,5 @@ esrally race \
 | Elasticsearch JVM heap | ES requires `Xms` and `Xmx` to be equal. Mismatched values will prevent startup. |
 | GCP disk quota | Ran out of persistent disk quota mid-deployment. Check and raise GCP quotas before provisioning. |
 | Track data exceeds PVC size | Running a track whose decompressed dataset exceeded the pod's persistent storage killed the pod. Size PVCs accordingly before selecting a track. |
+| Disk utilized after terraform destroy | If you do a terraform destroy of the GKE cluster, it will not destroy the disks automatically. I can fix this bug later but for now you may need to manually clean up the disks in gcloud console > compute engine / Disks. You'll see them there. |
+| GKE cluster may be delete protected | May require manual deletion of GKE cluster after terraform destroy. Though the terraform destroy WILL delete all nodes and resources EXCEPT for some disks |
