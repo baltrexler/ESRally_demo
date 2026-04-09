@@ -70,6 +70,12 @@ esrally race \
 
 ---
 
+## Installation Times
+| Step | Time |
+|---|---|
+| Terraform Apply | 15 Minutes |
+| Helm Install | 
+
 ## Known Issues
 
 | Issue | Notes |

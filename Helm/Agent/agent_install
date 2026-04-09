@@ -1,0 +1,41 @@
+helm repo add elastic https://helm.elastic.co/
+helm repo update
+
+helm upgrade --install elastic-agent elastic/elastic-agent \
+  --namespace elk -f values.yaml
+
+
+--url=https://eabec9be0e2a4881aea588d630c897ea.fleet.us-central1.gcp.elastic.cloud:443 --enrollment-token=bDlJVWFaMEI5YThqZXVlYlpCdHE6bkRpYWZHeWxRUGlwbmx2Y0VKS2FLQQ==
+
+kubectl -n elk patch daemonset agent-pernode-elastic-agent --type=json -p='[
+  {
+    "op": "add",
+    "path": "/spec/template/spec/tolerations",
+    "value": [
+      {
+        "key": "apptype",
+        "operator": "Exists",
+        "effect": "NoSchedule"
+      }
+    ]
+  }
+]'
+
+kubectl -n elk patch daemonset agent-pernode-elastic-agent --type=json -p='[
+  {
+    "op": "add",
+    "path": "/spec/template/spec/containers/0/securityContext",
+    "value": {
+      "runAsUser": 0,
+      "capabilities": {
+        "add": [
+          "SYS_PTRACE",
+          "NET_ADMIN",
+          "SYS_ADMIN",
+          "SYS_RESOURCE",
+          "DAC_READ_SEARCH"
+        ]
+      }
+    }
+  }
+]'
