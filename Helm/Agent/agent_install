@@ -39,3 +39,15 @@ kubectl -n elk patch daemonset agent-pernode-elastic-agent --type=json -p='[
     }
   }
 ]'
+
+helm install elastic-agent elastic/elastic-agent \
+  --version 9.3.3 \
+  -n elk \
+  --set tolerations[0].key=apptype \
+  --set tolerations[0].operator=Exists \
+  --set tolerations[0].effect=NoSchedule \
+  --set outputs.default.url=https://my-observability-project-faa5a5.es.us-central1.gcp.elastic.cloud:443 \
+  --set kubernetes.onboardingID=2c9f5a54-4ab3-444d-8beb-fb362653bb9d \
+  --set kubernetes.enabled=true \
+  --set outputs.default.type=ESPlainAuthAPI \
+  --set outputs.default.api_key=$(echo "bDlJVWFaMEI5YThqZXVlYlpCdHE6bkRpYWZHeWxRUGlwbmx2Y0VKS2FLQQ==" | base64 -d)

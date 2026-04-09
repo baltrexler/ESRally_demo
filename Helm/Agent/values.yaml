@@ -1,13 +1,4 @@
-# values.yaml
-agent:
-  fleet:
-    enabled: true
-    preset: perNode
-    url: "https://eabec9be0e2a4881aea588d630c897ea.fleet.us-central1.gcp.elastic.cloud:443"
-    token: "bDlJVWFaMEI5YThqZXVlYlpCdHE6bkRpYWZHeWxRUGlwbmx2Y0VKS2FLQQ=="
-    presets:
-      perNode:
-        tolerations:
-          - key: "apptype"
-            operator: "Exists"
-            effect: "NoSchedule"
+tolerations:
+  - key: "apptype"
+    operator: "Exists"
+    effect: "NoSchedule"
